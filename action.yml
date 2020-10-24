@@ -5,7 +5,7 @@ inputs:
   label:
     required: true
     description: 'the label which needs to be resent on the pull request'
-  dispatch-event: trigger-integration-tests
+  dispatch-event:
     required: true
     description: 'the the name of the event dispatched for each matching pull request'
   token:
