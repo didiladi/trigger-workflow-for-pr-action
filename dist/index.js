@@ -4725,7 +4725,8 @@ function dispatch(octokit, pullRequest, input) {
                 ref: pullRequest.ref,
                 pr_number: pullRequest.issueNumber,
                 user: pullRequest.user,
-                repo: pullRequest.repository
+                repo: pullRequest.repository,
+                label: pullRequest.label
             };
             octokit.repos.createDispatchEvent({
                 owner: input.repositoryOwner,
@@ -5497,7 +5498,8 @@ function getPullRequests(octokit, input) {
                             issueNumber: pr.id,
                             ref: pr.head.ref,
                             user: pr.head.user.login,
-                            repository: pr.head.repo.name
+                            repository: pr.head.repo.name,
+                            label: input.label
                         });
                     }
                 }

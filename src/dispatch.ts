@@ -7,6 +7,7 @@ interface ClientPayload {
   pr_number: number
   user: string
   repo: string
+  label: string
 }
 
 export async function dispatch(
@@ -19,7 +20,8 @@ export async function dispatch(
       ref: pullRequest.ref,
       pr_number: pullRequest.issueNumber,
       user: pullRequest.user,
-      repo: pullRequest.repository
+      repo: pullRequest.repository,
+      label: pullRequest.label
     }
 
     octokit.repos.createDispatchEvent({

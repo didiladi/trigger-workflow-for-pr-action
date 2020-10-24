@@ -13,6 +13,7 @@ export interface PullRequestResult {
   ref: string
   user: string
   repository: string
+  label: string
 }
 
 interface LabelContaining {
@@ -94,7 +95,8 @@ export async function getPullRequests(
             issueNumber: pr.id,
             ref: pr.head.ref,
             user: pr.head.user.login,
-            repository: pr.head.repo.name
+            repository: pr.head.repo.name,
+            label: input.label
           })
         }
       }
