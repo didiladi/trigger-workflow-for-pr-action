@@ -1,11 +1,23 @@
-name: 'Your name here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'trigger-workflow-for-pr'
+description: 'This action triggers a dispatch event for each pull request where a liven label is added. It is intended to run a special set of actions (e.g. tests which require tokens) on code coming from pull requests.'
+author: 'didiladi'
 inputs:
-  milliseconds: # change this
+  label:
     required: true
-    description: 'input description here'
-    default: 'default value if applicable'
+    description: 'the label which needs to be resent on the pull request'
+  dispatch-event: trigger-integration-tests
+    required: true
+    description: 'the the name of the event dispatched for each matching pull request'
+  token:
+    required: true
+    description: 'the token (in most cases this is ${{ secrets.GITHUB_TOKEN }})'
+  repository:
+    required: false
+    description: 'the respository to search for pull requests in the format {owner}/{repo}'
+  comment-user:
+    required: true
+    description: 'the respository to search for pull requests in the format {owner}/{repo}'
+    default: 'github-actions[bot]'
 runs:
   using: 'node12'
   main: 'dist/index.js'

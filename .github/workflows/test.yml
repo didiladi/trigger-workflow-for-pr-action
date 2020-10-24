@@ -21,4 +21,6 @@ jobs:
       - uses: actions/checkout@v2
       - uses: ./
         with:
-          milliseconds: 1000
+          label: run-integration-tests
+          dispatch-event: trigger-integration-tests
+          token: ${{ secrets.GITHUB_TOKEN }}

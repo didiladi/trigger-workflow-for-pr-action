@@ -1,16 +1,28 @@
 import * as core from '@actions/core'
-import {wait} from './wait'
+import * as github from '@actions/github'
+
+import { getPullRequests, PullRequestResult } from './pull-request'
+import { getInputs } from './input-helper'
+import { dispatch } from './dispatch'
 
 async function run(): Promise<void> {
   try {
-    const ms: string = core.getInput('milliseconds')
-    core.debug(`Waiting ${ms} milliseconds ...`) // debug is only output if you set the secret `ACTIONS_RUNNER_DEBUG` to true
 
-    core.debug(new Date().toTimeString())
-    await wait(parseInt(ms, 10))
-    core.debug(new Date().toTimeString())
+    const inputs = getInputs()
+    core.info(`Will dispatch event ${inputs.dispatchEvent} for every PR which contains a non-processed ${inputs.label} label...`);
 
-    core.setOutput('time', new Date().toTimeString())
+    const octokit = github.getOctokit(inputs.token)
+    const pullRequests: PullRequestResult[] = await getPullRequests(octokit, inputs);
+
+    for (let pullRequest of pullRequests) {
+      const success = dispatch(octokit, pullRequest, inputs)
+
+      if (success) {
+        core.info(`Successfully dispatched event ${inputs.dispatchEvent} for PR ${pullRequest.issueNumber} on ${pullRequest.user}/${pullRequest.repository}`);
+      } else {
+        core.error(`Dispatching event ${inputs.dispatchEvent} for PR ${pullRequest.issueNumber} on ${pullRequest.user}/${pullRequest.repository} failed`);
+      }
+    }
   } catch (error) {
     core.setFailed(error.message)
   }
