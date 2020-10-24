@@ -10,7 +10,7 @@ inputs:
     description: 'the the name of the event dispatched for each matching pull request'
   token:
     required: true
-    description: 'the token (in most cases this is ${{ secrets.GITHUB_TOKEN }})'
+    description: 'the token (in most cases this is \${{ secrets.GITHUB_TOKEN }})'
   repository:
     required: false
     description: 'the respository to search for pull requests in the format {owner}/{repo}'
