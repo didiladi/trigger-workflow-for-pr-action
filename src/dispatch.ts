@@ -30,7 +30,7 @@ export async function dispatch(
         owner: input.repositoryOwner,
         repo: input.repositoryName,
         event_type: input.dispatchEvent,
-        client_payload: JSON.stringify(payload)
+        client_payload: payload
       }
     )
 

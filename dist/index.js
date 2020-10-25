@@ -4733,7 +4733,7 @@ function dispatch(octokit, pullRequest, input) {
                 owner: input.repositoryOwner,
                 repo: input.repositoryName,
                 event_type: input.dispatchEvent,
-                client_payload: JSON.stringify(payload)
+                client_payload: payload
             });
             if (response.status === 204) {
                 return resolve();
