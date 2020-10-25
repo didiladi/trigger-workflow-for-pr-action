@@ -28,7 +28,7 @@ export async function getPullRequests(
   octokit: Octokit,
   input: InputSettings
 ): Promise<PullRequestResult[]> {
-  return new Promise<PullRequestResult[]>(async (resolve, reject) => {
+  return new Promise<PullRequestResult[]>(async resolve => {
     const pullRequests: OctokitResponse<PullsListResponseData> = await octokit.pulls.list(
       {
         owner: input.repositoryOwner,
@@ -90,29 +90,25 @@ export async function getPullRequests(
 
         const commentPrefix = `<!-- Do not edit. label:${input.label} time:${lastLabelEventTimestamp} -->`
 
-        try {
-          if (
-            !alreadyContainsLabelComment(
-              octokit,
-              pr.number,
-              lastLabelEventTimestamp,
-              input,
-              commentPrefix
-            )
-          ) {
-            core.info(
-              `PR ${pr.number} selected for dispatch event ${input.dispatchEvent}`
-            )
-            result.push({
-              prNumber: pr.number,
-              ref: pr.head.ref,
-              user: pr.head.user.login,
-              repository: pr.head.repo.name,
-              commentPrefix
-            })
-          }
-        } catch (error) {
-          reject(error)
+        if (
+          !alreadyContainsLabelComment(
+            octokit,
+            pr.number,
+            lastLabelEventTimestamp,
+            input,
+            commentPrefix
+          )
+        ) {
+          core.info(
+            `PR ${pr.number} selected for dispatch event ${input.dispatchEvent}`
+          )
+          result.push({
+            prNumber: pr.number,
+            ref: pr.head.ref,
+            user: pr.head.user.login,
+            repository: pr.head.repo.name,
+            commentPrefix
+          })
         }
       }
     }
@@ -184,10 +180,10 @@ async function alreadyContainsLabelComment(
 
       if (comment.body.startsWith(commentPrefix)) {
         core.info(`PR ${prId} already contained comment: skipping PR`)
-        return resolve(false)
+        return resolve(true)
       }
     }
-    return resolve(true)
+    return resolve(false)
   })
 }
 

@@ -5464,7 +5464,7 @@ exports.getPullRequests = void 0;
 const core = __importStar(__webpack_require__(186));
 function getPullRequests(octokit, input) {
     return __awaiter(this, void 0, void 0, function* () {
-        return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+        return new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
             const pullRequests = yield octokit.pulls.list({
                 owner: input.repositoryOwner,
                 repo: input.repositoryName,
@@ -5503,20 +5503,15 @@ function getPullRequests(octokit, input) {
                     }
                     core.info(`Label was added at ${lastLabelEventTimestamp} on PR ${pr.number}`);
                     const commentPrefix = `<!-- Do not edit. label:${input.label} time:${lastLabelEventTimestamp} -->`;
-                    try {
-                        if (!alreadyContainsLabelComment(octokit, pr.number, lastLabelEventTimestamp, input, commentPrefix)) {
-                            core.info(`PR ${pr.number} selected for dispatch event ${input.dispatchEvent}`);
-                            result.push({
-                                prNumber: pr.number,
-                                ref: pr.head.ref,
-                                user: pr.head.user.login,
-                                repository: pr.head.repo.name,
-                                commentPrefix
-                            });
-                        }
-                    }
-                    catch (error) {
-                        reject(error);
+                    if (!alreadyContainsLabelComment(octokit, pr.number, lastLabelEventTimestamp, input, commentPrefix)) {
+                        core.info(`PR ${pr.number} selected for dispatch event ${input.dispatchEvent}`);
+                        result.push({
+                            prNumber: pr.number,
+                            ref: pr.head.ref,
+                            user: pr.head.user.login,
+                            repository: pr.head.repo.name,
+                            commentPrefix
+                        });
                     }
                 }
             }
@@ -5567,10 +5562,10 @@ function alreadyContainsLabelComment(octokit, prId, lastLabelEventTimestamp, inp
                 }
                 if (comment.body.startsWith(commentPrefix)) {
                     core.info(`PR ${prId} already contained comment: skipping PR`);
-                    return resolve(false);
+                    return resolve(true);
                 }
             }
-            return resolve(true);
+            return resolve(false);
         }));
     });
 }
