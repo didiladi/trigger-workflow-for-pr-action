@@ -28,4 +28,9 @@ export interface InputSettings {
    * The user who comments on the PR
    */
   commentUser: string
+
+  /**
+   * The token used for the dispatch event
+   */
+  dispatchToken: string
 }

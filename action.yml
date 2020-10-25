@@ -11,6 +11,9 @@ inputs:
   token:
     required: true
     description: 'the token (in most cases this is secrets.GITHUB_TOKEN)'
+  dispatch-token:
+    required: true
+    description: 'the token used for dispatching the event'
   repository:
     required: false
     description: 'the respository to search for pull requests in the format {owner}/{repo}'

@@ -13,13 +13,14 @@ async function run(): Promise<void> {
     )
 
     const octokit = github.getOctokit(inputs.token)
+    const dispatchOctokit = github.getOctokit(inputs.dispatchToken)
     const pullRequests: PullRequestResult[] = await getPullRequests(
       octokit,
       inputs
     )
 
     for (const pullRequest of pullRequests) {
-      const success = dispatch(octokit, pullRequest, inputs)
+      const success = dispatch(dispatchOctokit, pullRequest, inputs)
 
       if (success) {
         core.info(

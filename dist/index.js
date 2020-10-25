@@ -1434,9 +1434,10 @@ function run() {
             const inputs = input_helper_1.getInputs();
             core.info(`Will dispatch event ${inputs.dispatchEvent} for every PR which contains a non-processed ${inputs.label} label...`);
             const octokit = github.getOctokit(inputs.token);
+            const dispatchOctokit = github.getOctokit(inputs.dispatchToken);
             const pullRequests = yield pull_request_1.getPullRequests(octokit, inputs);
             for (const pullRequest of pullRequests) {
-                const success = dispatch_1.dispatch(octokit, pullRequest, inputs);
+                const success = dispatch_1.dispatch(dispatchOctokit, pullRequest, inputs);
                 if (success) {
                     core.info(`Successfully dispatched event ${inputs.dispatchEvent} for PR ${pullRequest.prNumber} on ${pullRequest.user}/${pullRequest.repository}`);
                 }
@@ -4781,6 +4782,7 @@ function getInputs() {
     result.label = core.getInput('label');
     result.token = core.getInput('token');
     result.commentUser = core.getInput('comment-user');
+    result.dispatchToken = core.getInput('dispatch-token');
     const qualifiedRepository = core.getInput('repository') ||
         `${github.context.repo.owner}/${github.context.repo.repo}`;
     core.debug(`qualified repository = '${qualifiedRepository}'`);

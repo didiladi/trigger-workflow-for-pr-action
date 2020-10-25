@@ -9,6 +9,7 @@ export function getInputs(): InputSettings {
   result.label = core.getInput('label')
   result.token = core.getInput('token')
   result.commentUser = core.getInput('comment-user')
+  result.dispatchToken = core.getInput('dispatch-token')
 
   const qualifiedRepository =
     core.getInput('repository') ||
