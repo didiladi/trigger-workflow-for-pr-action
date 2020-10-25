@@ -5471,7 +5471,7 @@ function getPullRequests(octokit, input) {
                 state: 'open'
             });
             if (!isSuccessful(pullRequests.status)) {
-                return reject(new TypeError(`GET pull requests failed: ${pullRequests.status}`));
+                throw new Error(`GET pull requests failed: ${pullRequests.status}`);
             }
             core.debug('Pull Requests:');
             core.debug(JSON.stringify(pullRequests.data));
@@ -5492,7 +5492,7 @@ function getPullRequests(octokit, input) {
                         issue_number: pr.id
                     });
                     if (!isSuccessful(events.status)) {
-                        return reject(new TypeError(`GET pull request events failed: ${events.status}`));
+                        throw new Error(`GET pull request events failed: ${events.status}`);
                     }
                     core.debug('Events:');
                     core.debug(JSON.stringify(events));
@@ -5550,14 +5550,14 @@ function getLastLabelEventTimestamp(events, label) {
 }
 function alreadyContainsLabelComment(octokit, prId, lastLabelEventTimestamp, input, commentPrefix) {
     return __awaiter(this, void 0, void 0, function* () {
-        return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+        return new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
             const comments = yield octokit.issues.listComments({
                 owner: input.repositoryOwner,
                 repo: input.repositoryName,
                 issue_number: prId
             });
             if (!isSuccessful(comments.status)) {
-                return reject(new TypeError(`GET pull request comments failed: ${comments.status}`));
+                throw new Error(`GET pull request comments failed: ${comments.status}`);
             }
             core.debug('Comments:');
             core.debug(JSON.stringify(comments));
