@@ -13,7 +13,7 @@ export interface PullRequestResult {
   ref: string
   user: string
   repository: string
-  label: string
+  commentPrefix: string
 }
 
 interface LabelContaining {
@@ -80,12 +80,16 @@ export async function getPullRequests(
           'Label was added at ${lastLabelEventTimestamp} on PR ${pr.id}'
         )
 
+        const commentPrefix =
+          '<!-- Do not edit. label:${input.label} time:${lastLabelEventTimestamp} -->'
+
         if (
           !alreadyContainsLabelComment(
             octokit,
             pr.id,
             lastLabelEventTimestamp,
-            input
+            input,
+            commentPrefix
           )
         ) {
           core.info(
@@ -96,7 +100,7 @@ export async function getPullRequests(
             ref: pr.head.ref,
             user: pr.head.user.login,
             repository: pr.head.repo.name,
-            label: input.label
+            commentPrefix
           })
         }
       }
@@ -143,7 +147,8 @@ async function alreadyContainsLabelComment(
   octokit: Octokit,
   prId: number,
   lastLabelEventTimestamp: number,
-  input: InputSettings
+  input: InputSettings,
+  commentPrefix: string
 ): Promise<boolean> {
   const comments: OctokitResponse<IssuesListCommentsResponseData> = await octokit.issues.listComments(
     {
@@ -161,11 +166,7 @@ async function alreadyContainsLabelComment(
       continue
     }
 
-    if (
-      comment.body.startsWith(
-        '<!-- Do not edit. label:${input.label} time:${lastLabelEventTimestamp} -->'
-      )
-    ) {
+    if (comment.body.startsWith(commentPrefix)) {
       core.info('PR ${prId} already contained comment: skipping PR')
       return false
     }

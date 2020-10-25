@@ -4726,7 +4726,7 @@ function dispatch(octokit, pullRequest, input) {
                 pr_number: pullRequest.issueNumber,
                 user: pullRequest.user,
                 repo: pullRequest.repository,
-                label: pullRequest.label
+                commentPrefix: pullRequest.commentPrefix
             };
             octokit.repos.createDispatchEvent({
                 owner: input.repositoryOwner,
@@ -5492,14 +5492,15 @@ function getPullRequests(octokit, input) {
                         continue;
                     }
                     core.info('Label was added at ${lastLabelEventTimestamp} on PR ${pr.id}');
-                    if (!alreadyContainsLabelComment(octokit, pr.id, lastLabelEventTimestamp, input)) {
+                    const commentPrefix = '<!-- Do not edit. label:${input.label} time:${lastLabelEventTimestamp} -->';
+                    if (!alreadyContainsLabelComment(octokit, pr.id, lastLabelEventTimestamp, input, commentPrefix)) {
                         core.info('PR ${pr.id} selected for dispatch event ${input.dispatchEvent}');
                         result.push({
                             issueNumber: pr.id,
                             ref: pr.head.ref,
                             user: pr.head.user.login,
                             repository: pr.head.repo.name,
-                            label: input.label
+                            commentPrefix
                         });
                     }
                 }
@@ -5532,7 +5533,7 @@ function getLastLabelEventTimestamp(events, label) {
     }
     return lastLabelEventTimestamp;
 }
-function alreadyContainsLabelComment(octokit, prId, lastLabelEventTimestamp, input) {
+function alreadyContainsLabelComment(octokit, prId, lastLabelEventTimestamp, input, commentPrefix) {
     return __awaiter(this, void 0, void 0, function* () {
         const comments = yield octokit.issues.listComments({
             owner: input.repositoryOwner,
@@ -5545,7 +5546,7 @@ function alreadyContainsLabelComment(octokit, prId, lastLabelEventTimestamp, inp
             if (comment.user.login !== input.commentUser) {
                 continue;
             }
-            if (comment.body.startsWith('<!-- Do not edit. label:${input.label} time:${lastLabelEventTimestamp} -->')) {
+            if (comment.body.startsWith(commentPrefix)) {
                 core.info('PR ${prId} already contained comment: skipping PR');
                 return false;
             }
