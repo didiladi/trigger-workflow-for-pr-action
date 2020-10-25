@@ -94,25 +94,29 @@ export async function getPullRequests(
 
         const commentPrefix = `<!-- Do not edit. label:${input.label} time:${lastLabelEventTimestamp} -->`
 
-        if (
-          !alreadyContainsLabelComment(
-            octokit,
-            pr.id,
-            lastLabelEventTimestamp,
-            input,
-            commentPrefix
-          )
-        ) {
-          core.info(
-            `PR ${pr.id} selected for dispatch event ${input.dispatchEvent}`
-          )
-          result.push({
-            issueNumber: pr.id,
-            ref: pr.head.ref,
-            user: pr.head.user.login,
-            repository: pr.head.repo.name,
-            commentPrefix
-          })
+        try {
+          if (
+            !alreadyContainsLabelComment(
+              octokit,
+              pr.id,
+              lastLabelEventTimestamp,
+              input,
+              commentPrefix
+            )
+          ) {
+            core.info(
+              `PR ${pr.id} selected for dispatch event ${input.dispatchEvent}`
+            )
+            result.push({
+              issueNumber: pr.id,
+              ref: pr.head.ref,
+              user: pr.head.user.login,
+              repository: pr.head.repo.name,
+              commentPrefix
+            })
+          }
+        } catch (error) {
+          reject(error)
         }
       }
     }
