@@ -89,12 +89,27 @@ export async function getPullRequests(
         )
 
         const commentPrefix = `<!-- Do not edit. label:${input.label} time:${lastLabelEventTimestamp} -->`
+        const comments: OctokitResponse<IssuesListCommentsResponseData> = await octokit.issues.listComments(
+          {
+            owner: input.repositoryOwner,
+            repo: input.repositoryName,
+            issue_number: pr.number
+          }
+        )
+
+        if (!isSuccessful(comments.status)) {
+          throw new Error(
+            `GET pull request comments failed: ${comments.status}`
+          )
+        }
+
+        core.debug('Comments:')
+        core.debug(JSON.stringify(comments))
 
         if (
           !alreadyContainsLabelComment(
-            octokit,
+            comments.data,
             pr.number,
-            lastLabelEventTimestamp,
             input,
             commentPrefix
           )
@@ -150,41 +165,23 @@ function getLastLabelEventTimestamp(
   return lastLabelEventTimestamp
 }
 
-async function alreadyContainsLabelComment(
-  octokit: Octokit,
+function alreadyContainsLabelComment(
+  comments: IssuesListCommentsResponseData,
   prId: number,
-  lastLabelEventTimestamp: number,
   input: InputSettings,
   commentPrefix: string
-): Promise<boolean> {
-  return new Promise<boolean>(async resolve => {
-    const comments: OctokitResponse<IssuesListCommentsResponseData> = await octokit.issues.listComments(
-      {
-        owner: input.repositoryOwner,
-        repo: input.repositoryName,
-        issue_number: prId
-      }
-    )
-
-    if (!isSuccessful(comments.status)) {
-      throw new Error(`GET pull request comments failed: ${comments.status}`)
+): boolean {
+  for (const comment of comments) {
+    if (comment.user.login !== input.commentUser) {
+      continue
     }
 
-    core.debug('Comments:')
-    core.debug(JSON.stringify(comments))
-
-    for (const comment of comments.data) {
-      if (comment.user.login !== input.commentUser) {
-        continue
-      }
-
-      if (comment.body.startsWith(commentPrefix)) {
-        core.info(`PR ${prId} already contained comment: skipping PR`)
-        return resolve(true)
-      }
+    if (comment.body.startsWith(commentPrefix)) {
+      core.info(`PR ${prId} already contained comment: skipping PR`)
+      return true
     }
-    return resolve(false)
-  })
+  }
+  return false
 }
 
 function isSuccessful(status: number): boolean {

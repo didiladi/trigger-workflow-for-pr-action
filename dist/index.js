@@ -5503,7 +5503,17 @@ function getPullRequests(octokit, input) {
                     }
                     core.info(`Label was added at ${lastLabelEventTimestamp} on PR ${pr.number}`);
                     const commentPrefix = `<!-- Do not edit. label:${input.label} time:${lastLabelEventTimestamp} -->`;
-                    if (!alreadyContainsLabelComment(octokit, pr.number, lastLabelEventTimestamp, input, commentPrefix)) {
+                    const comments = yield octokit.issues.listComments({
+                        owner: input.repositoryOwner,
+                        repo: input.repositoryName,
+                        issue_number: pr.number
+                    });
+                    if (!isSuccessful(comments.status)) {
+                        throw new Error(`GET pull request comments failed: ${comments.status}`);
+                    }
+                    core.debug('Comments:');
+                    core.debug(JSON.stringify(comments));
+                    if (!alreadyContainsLabelComment(comments.data, pr.number, input, commentPrefix)) {
                         core.info(`PR ${pr.number} selected for dispatch event ${input.dispatchEvent}`);
                         result.push({
                             prNumber: pr.number,
@@ -5543,31 +5553,17 @@ function getLastLabelEventTimestamp(events, label) {
     }
     return lastLabelEventTimestamp;
 }
-function alreadyContainsLabelComment(octokit, prId, lastLabelEventTimestamp, input, commentPrefix) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
-            const comments = yield octokit.issues.listComments({
-                owner: input.repositoryOwner,
-                repo: input.repositoryName,
-                issue_number: prId
-            });
-            if (!isSuccessful(comments.status)) {
-                throw new Error(`GET pull request comments failed: ${comments.status}`);
-            }
-            core.debug('Comments:');
-            core.debug(JSON.stringify(comments));
-            for (const comment of comments.data) {
-                if (comment.user.login !== input.commentUser) {
-                    continue;
-                }
-                if (comment.body.startsWith(commentPrefix)) {
-                    core.info(`PR ${prId} already contained comment: skipping PR`);
-                    return resolve(true);
-                }
-            }
-            return resolve(false);
-        }));
-    });
+function alreadyContainsLabelComment(comments, prId, input, commentPrefix) {
+    for (const comment of comments) {
+        if (comment.user.login !== input.commentUser) {
+            continue;
+        }
+        if (comment.body.startsWith(commentPrefix)) {
+            core.info(`PR ${prId} already contained comment: skipping PR`);
+            return true;
+        }
+    }
+    return false;
 }
 function isSuccessful(status) {
     return status >= 200 && status <= 300;
