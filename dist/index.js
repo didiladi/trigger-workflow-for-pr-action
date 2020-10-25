@@ -4720,7 +4720,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.dispatch = void 0;
 function dispatch(octokit, pullRequest, input) {
     return __awaiter(this, void 0, void 0, function* () {
-        return new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
+        return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
             const payload = {
                 ref: pullRequest.ref,
                 pr_number: pullRequest.issueNumber,
@@ -4728,13 +4728,16 @@ function dispatch(octokit, pullRequest, input) {
                 repo: pullRequest.repository,
                 commentPrefix: pullRequest.commentPrefix
             };
-            octokit.repos.createDispatchEvent({
+            const response = yield octokit.repos.createDispatchEvent({
                 owner: input.repositoryOwner,
                 repo: input.repositoryName,
                 event_type: input.dispatchEvent,
                 client_payload: JSON.stringify(payload)
             });
-            return resolve(true);
+            if (response.status === 204) {
+                return resolve();
+            }
+            return reject(new TypeError(`Unexpected status code: ${response.status}`));
         }));
     });
 }

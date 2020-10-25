@@ -1,6 +1,7 @@
 import {InputSettings} from './input-settings'
 import {PullRequestResult} from './pull-request'
 import {Octokit} from '@octokit/core'
+import {OctokitResponse} from '@octokit/types'
 
 interface ClientPayload {
   ref: string
@@ -14,8 +15,8 @@ export async function dispatch(
   octokit: Octokit,
   pullRequest: PullRequestResult,
   input: InputSettings
-): Promise<boolean> {
-  return new Promise<boolean>(async resolve => {
+): Promise<void> {
+  return new Promise<void>(async (resolve, reject) => {
     const payload: ClientPayload = {
       ref: pullRequest.ref,
       pr_number: pullRequest.issueNumber,
@@ -24,13 +25,18 @@ export async function dispatch(
       commentPrefix: pullRequest.commentPrefix
     }
 
-    octokit.repos.createDispatchEvent({
-      owner: input.repositoryOwner,
-      repo: input.repositoryName,
-      event_type: input.dispatchEvent,
-      client_payload: JSON.stringify(payload)
-    })
+    const response: OctokitResponse<void> = await octokit.repos.createDispatchEvent(
+      {
+        owner: input.repositoryOwner,
+        repo: input.repositoryName,
+        event_type: input.dispatchEvent,
+        client_payload: JSON.stringify(payload)
+      }
+    )
 
-    return resolve(true)
+    if (response.status === 204) {
+      return resolve()
+    }
+    return reject(new TypeError(`Unexpected status code: ${response.status}`))
   })
 }
