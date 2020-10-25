@@ -5479,13 +5479,6 @@ function getPullRequests(octokit, input) {
             core.debug(JSON.stringify(pullRequests.data));
             const result = [];
             for (const pr of pullRequests.data) {
-                /*
-                const prResponse: OctokitResponse<PullsGetResponseData> = await octokit.pulls.get({
-                  owner: input.repositoryOwner,
-                  repo: input.repositoryName,
-                  pull_number: pr.id
-                })
-                */
                 if (containsLabel(octokit, pr.labels, input.label)) {
                     core.info(`PR ${pr.number} contained label ${input.label}`);
                     const events = yield octokit.issues.listEvents({
