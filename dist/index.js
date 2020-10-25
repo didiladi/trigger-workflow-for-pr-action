@@ -5481,7 +5481,7 @@ function getPullRequests(octokit, input) {
                 })
                 */
                 if (containsLabel(octokit, pr.labels, input.label)) {
-                    core.info('PR ${pr.id} contained label ${input.label}');
+                    core.info(`PR ${pr.id} contained label ${input.label}`);
                     const events = yield octokit.issues.listEvents({
                         owner: input.repositoryOwner,
                         repo: input.repositoryName,
@@ -5491,13 +5491,13 @@ function getPullRequests(octokit, input) {
                     core.debug(JSON.stringify(events));
                     const lastLabelEventTimestamp = getLastLabelEventTimestamp(events.data, input.label);
                     if (lastLabelEventTimestamp === 0) {
-                        core.error('No timestamp found, despite label was present on PR ${pr.id}');
+                        core.error(`No timestamp found, despite label was present on PR ${pr.id}`);
                         continue;
                     }
-                    core.info('Label was added at ${lastLabelEventTimestamp} on PR ${pr.id}');
-                    const commentPrefix = '<!-- Do not edit. label:${input.label} time:${lastLabelEventTimestamp} -->';
+                    core.info(`Label was added at ${lastLabelEventTimestamp} on PR ${pr.id}`);
+                    const commentPrefix = `<!-- Do not edit. label:${input.label} time:${lastLabelEventTimestamp} -->`;
                     if (!alreadyContainsLabelComment(octokit, pr.id, lastLabelEventTimestamp, input, commentPrefix)) {
-                        core.info('PR ${pr.id} selected for dispatch event ${input.dispatchEvent}');
+                        core.info(`PR ${pr.id} selected for dispatch event ${input.dispatchEvent}`);
                         result.push({
                             issueNumber: pr.id,
                             ref: pr.head.ref,
@@ -5550,7 +5550,7 @@ function alreadyContainsLabelComment(octokit, prId, lastLabelEventTimestamp, inp
                 continue;
             }
             if (comment.body.startsWith(commentPrefix)) {
-                core.info('PR ${prId} already contained comment: skipping PR');
+                core.info(`PR ${prId} already contained comment: skipping PR`);
                 return false;
             }
         }

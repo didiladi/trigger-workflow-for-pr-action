@@ -52,7 +52,7 @@ export async function getPullRequests(
       */
 
       if (containsLabel(octokit, pr.labels, input.label)) {
-        core.info('PR ${pr.id} contained label ${input.label}')
+        core.info(`PR ${pr.id} contained label ${input.label}`)
 
         const events: OctokitResponse<IssuesListEventsResponseData> = await octokit.issues.listEvents(
           {
@@ -71,17 +71,16 @@ export async function getPullRequests(
         )
         if (lastLabelEventTimestamp === 0) {
           core.error(
-            'No timestamp found, despite label was present on PR ${pr.id}'
+            `No timestamp found, despite label was present on PR ${pr.id}`
           )
           continue
         }
 
         core.info(
-          'Label was added at ${lastLabelEventTimestamp} on PR ${pr.id}'
+          `Label was added at ${lastLabelEventTimestamp} on PR ${pr.id}`
         )
 
-        const commentPrefix =
-          '<!-- Do not edit. label:${input.label} time:${lastLabelEventTimestamp} -->'
+        const commentPrefix = `<!-- Do not edit. label:${input.label} time:${lastLabelEventTimestamp} -->`
 
         if (
           !alreadyContainsLabelComment(
@@ -93,7 +92,7 @@ export async function getPullRequests(
           )
         ) {
           core.info(
-            'PR ${pr.id} selected for dispatch event ${input.dispatchEvent}'
+            `PR ${pr.id} selected for dispatch event ${input.dispatchEvent}`
           )
           result.push({
             issueNumber: pr.id,
@@ -167,7 +166,7 @@ async function alreadyContainsLabelComment(
     }
 
     if (comment.body.startsWith(commentPrefix)) {
-      core.info('PR ${prId} already contained comment: skipping PR')
+      core.info(`PR ${prId} already contained comment: skipping PR`)
       return false
     }
   }
