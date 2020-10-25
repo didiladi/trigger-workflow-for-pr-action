@@ -1446,6 +1446,7 @@ function run() {
             }
         }
         catch (error) {
+            core.error(error.message);
             core.setFailed(error.message);
         }
     });
@@ -5463,12 +5464,15 @@ exports.getPullRequests = void 0;
 const core = __importStar(__webpack_require__(186));
 function getPullRequests(octokit, input) {
     return __awaiter(this, void 0, void 0, function* () {
-        return new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
+        return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
             const pullRequests = yield octokit.pulls.list({
                 owner: input.repositoryOwner,
                 repo: input.repositoryName,
                 state: 'open'
             });
+            if (!isSuccessful(pullRequests.status)) {
+                return reject(new TypeError(`GET pull requests failed: ${pullRequests.status}`));
+            }
             core.debug('Pull Requests:');
             core.debug(JSON.stringify(pullRequests.data));
             const result = [];
@@ -5487,6 +5491,9 @@ function getPullRequests(octokit, input) {
                         repo: input.repositoryName,
                         issue_number: pr.id
                     });
+                    if (!isSuccessful(events.status)) {
+                        return reject(new TypeError(`GET pull request events failed: ${events.status}`));
+                    }
                     core.debug('Events:');
                     core.debug(JSON.stringify(events));
                     const lastLabelEventTimestamp = getLastLabelEventTimestamp(events.data, input.label);
@@ -5538,24 +5545,32 @@ function getLastLabelEventTimestamp(events, label) {
 }
 function alreadyContainsLabelComment(octokit, prId, lastLabelEventTimestamp, input, commentPrefix) {
     return __awaiter(this, void 0, void 0, function* () {
-        const comments = yield octokit.issues.listComments({
-            owner: input.repositoryOwner,
-            repo: input.repositoryName,
-            issue_number: prId
-        });
-        core.debug('Comments:');
-        core.debug(JSON.stringify(comments));
-        for (const comment of comments.data) {
-            if (comment.user.login !== input.commentUser) {
-                continue;
+        return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+            const comments = yield octokit.issues.listComments({
+                owner: input.repositoryOwner,
+                repo: input.repositoryName,
+                issue_number: prId
+            });
+            if (!isSuccessful(comments.status)) {
+                return reject(new TypeError(`GET pull request comments failed: ${comments.status}`));
             }
-            if (comment.body.startsWith(commentPrefix)) {
-                core.info(`PR ${prId} already contained comment: skipping PR`);
-                return false;
+            core.debug('Comments:');
+            core.debug(JSON.stringify(comments));
+            for (const comment of comments.data) {
+                if (comment.user.login !== input.commentUser) {
+                    continue;
+                }
+                if (comment.body.startsWith(commentPrefix)) {
+                    core.info(`PR ${prId} already contained comment: skipping PR`);
+                    return resolve(false);
+                }
             }
-        }
-        return true;
+            return resolve(true);
+        }));
     });
+}
+function isSuccessful(status) {
+    return status >= 200 && status <= 300;
 }
 
 

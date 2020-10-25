@@ -32,6 +32,7 @@ async function run(): Promise<void> {
       }
     }
   } catch (error) {
+    core.error(error.message)
     core.setFailed(error.message)
   }
 }

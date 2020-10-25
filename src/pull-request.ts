@@ -28,7 +28,7 @@ export async function getPullRequests(
   octokit: Octokit,
   input: InputSettings
 ): Promise<PullRequestResult[]> {
-  return new Promise<PullRequestResult[]>(async resolve => {
+  return new Promise<PullRequestResult[]>(async (resolve, reject) => {
     const pullRequests: OctokitResponse<PullsListResponseData> = await octokit.pulls.list(
       {
         owner: input.repositoryOwner,
@@ -36,6 +36,12 @@ export async function getPullRequests(
         state: 'open'
       }
     )
+
+    if (!isSuccessful(pullRequests.status)) {
+      return reject(
+        new TypeError(`GET pull requests failed: ${pullRequests.status}`)
+      )
+    }
 
     core.debug('Pull Requests:')
     core.debug(JSON.stringify(pullRequests.data))
@@ -61,6 +67,12 @@ export async function getPullRequests(
             issue_number: pr.id
           }
         )
+
+        if (!isSuccessful(events.status)) {
+          return reject(
+            new TypeError(`GET pull request events failed: ${events.status}`)
+          )
+        }
 
         core.debug('Events:')
         core.debug(JSON.stringify(events))
@@ -149,26 +161,38 @@ async function alreadyContainsLabelComment(
   input: InputSettings,
   commentPrefix: string
 ): Promise<boolean> {
-  const comments: OctokitResponse<IssuesListCommentsResponseData> = await octokit.issues.listComments(
-    {
-      owner: input.repositoryOwner,
-      repo: input.repositoryName,
-      issue_number: prId
-    }
-  )
+  return new Promise<boolean>(async (resolve, reject) => {
+    const comments: OctokitResponse<IssuesListCommentsResponseData> = await octokit.issues.listComments(
+      {
+        owner: input.repositoryOwner,
+        repo: input.repositoryName,
+        issue_number: prId
+      }
+    )
 
-  core.debug('Comments:')
-  core.debug(JSON.stringify(comments))
-
-  for (const comment of comments.data) {
-    if (comment.user.login !== input.commentUser) {
-      continue
+    if (!isSuccessful(comments.status)) {
+      return reject(
+        new TypeError(`GET pull request comments failed: ${comments.status}`)
+      )
     }
 
-    if (comment.body.startsWith(commentPrefix)) {
-      core.info(`PR ${prId} already contained comment: skipping PR`)
-      return false
+    core.debug('Comments:')
+    core.debug(JSON.stringify(comments))
+
+    for (const comment of comments.data) {
+      if (comment.user.login !== input.commentUser) {
+        continue
+      }
+
+      if (comment.body.startsWith(commentPrefix)) {
+        core.info(`PR ${prId} already contained comment: skipping PR`)
+        return resolve(false)
+      }
     }
-  }
-  return true
+    return resolve(true)
+  })
+}
+
+function isSuccessful(status: number): boolean {
+  return status >= 200 && status <= 300
 }
