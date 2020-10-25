@@ -4727,7 +4727,7 @@ function dispatch(octokit, pullRequest, input) {
                 pr_number: pullRequest.issueNumber,
                 user: pullRequest.user,
                 repo: pullRequest.repository,
-                commentPrefix: pullRequest.commentPrefix
+                comment_prefix: pullRequest.commentPrefix
             };
             const response = yield octokit.repos.createDispatchEvent({
                 owner: input.repositoryOwner,

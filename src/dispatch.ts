@@ -8,7 +8,7 @@ interface ClientPayload {
   pr_number: number
   user: string
   repo: string
-  commentPrefix: string
+  comment_prefix: string
 }
 
 export async function dispatch(
@@ -22,7 +22,7 @@ export async function dispatch(
       pr_number: pullRequest.issueNumber,
       user: pullRequest.user,
       repo: pullRequest.repository,
-      commentPrefix: pullRequest.commentPrefix
+      comment_prefix: pullRequest.commentPrefix
     }
 
     const response: OctokitResponse<void> = await octokit.repos.createDispatchEvent(
