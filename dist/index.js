@@ -5560,6 +5560,8 @@ function alreadyContainsLabelComment(comments, prId, input, commentPrefix) {
         if (comment.user.login !== input.commentUser) {
             continue;
         }
+        // TODO change this to debug:
+        core.info(`Check body: '${comment.body}' against '${commentPrefix}'`);
         if (comment.body.startsWith(commentPrefix)) {
             core.info(`PR ${prId} already contained comment: skipping PR`);
             return true;
