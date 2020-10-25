@@ -23,11 +23,11 @@ async function run(): Promise<void> {
 
       if (success) {
         core.info(
-          `Successfully dispatched event ${inputs.dispatchEvent} for PR ${pullRequest.issueNumber} on ${pullRequest.user}/${pullRequest.repository}`
+          `Successfully dispatched event ${inputs.dispatchEvent} for PR ${pullRequest.prNumber} on ${pullRequest.user}/${pullRequest.repository}`
         )
       } else {
         core.error(
-          `Dispatching event ${inputs.dispatchEvent} for PR ${pullRequest.issueNumber} on ${pullRequest.user}/${pullRequest.repository} failed`
+          `Dispatching event ${inputs.dispatchEvent} for PR ${pullRequest.prNumber} on ${pullRequest.user}/${pullRequest.repository} failed`
         )
       }
     }

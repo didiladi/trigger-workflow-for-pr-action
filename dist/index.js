@@ -1438,10 +1438,10 @@ function run() {
             for (const pullRequest of pullRequests) {
                 const success = dispatch_1.dispatch(octokit, pullRequest, inputs);
                 if (success) {
-                    core.info(`Successfully dispatched event ${inputs.dispatchEvent} for PR ${pullRequest.issueNumber} on ${pullRequest.user}/${pullRequest.repository}`);
+                    core.info(`Successfully dispatched event ${inputs.dispatchEvent} for PR ${pullRequest.prNumber} on ${pullRequest.user}/${pullRequest.repository}`);
                 }
                 else {
-                    core.error(`Dispatching event ${inputs.dispatchEvent} for PR ${pullRequest.issueNumber} on ${pullRequest.user}/${pullRequest.repository} failed`);
+                    core.error(`Dispatching event ${inputs.dispatchEvent} for PR ${pullRequest.prNumber} on ${pullRequest.user}/${pullRequest.repository} failed`);
                 }
             }
         }
@@ -4724,7 +4724,7 @@ function dispatch(octokit, pullRequest, input) {
         return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
             const payload = {
                 ref: pullRequest.ref,
-                pr_number: pullRequest.issueNumber,
+                pr_number: pullRequest.prNumber,
                 user: pullRequest.user,
                 repo: pullRequest.repository,
                 comment_prefix: pullRequest.commentPrefix
@@ -5485,11 +5485,11 @@ function getPullRequests(octokit, input) {
                 })
                 */
                 if (containsLabel(octokit, pr.labels, input.label)) {
-                    core.info(`PR ${pr.id} contained label ${input.label}`);
+                    core.info(`PR ${pr.number} contained label ${input.label}`);
                     const events = yield octokit.issues.listEvents({
                         owner: input.repositoryOwner,
                         repo: input.repositoryName,
-                        issue_number: pr.id
+                        issue_number: pr.number
                     });
                     if (!isSuccessful(events.status)) {
                         throw new Error(`GET pull request events failed: ${events.status}`);
@@ -5498,16 +5498,16 @@ function getPullRequests(octokit, input) {
                     core.debug(JSON.stringify(events));
                     const lastLabelEventTimestamp = getLastLabelEventTimestamp(events.data, input.label);
                     if (lastLabelEventTimestamp === 0) {
-                        core.error(`No timestamp found, despite label was present on PR ${pr.id}`);
+                        core.error(`No timestamp found, despite label was present on PR ${pr.number}`);
                         continue;
                     }
-                    core.info(`Label was added at ${lastLabelEventTimestamp} on PR ${pr.id}`);
+                    core.info(`Label was added at ${lastLabelEventTimestamp} on PR ${pr.number}`);
                     const commentPrefix = `<!-- Do not edit. label:${input.label} time:${lastLabelEventTimestamp} -->`;
                     try {
-                        if (!alreadyContainsLabelComment(octokit, pr.id, lastLabelEventTimestamp, input, commentPrefix)) {
-                            core.info(`PR ${pr.id} selected for dispatch event ${input.dispatchEvent}`);
+                        if (!alreadyContainsLabelComment(octokit, pr.number, lastLabelEventTimestamp, input, commentPrefix)) {
+                            core.info(`PR ${pr.number} selected for dispatch event ${input.dispatchEvent}`);
                             result.push({
-                                issueNumber: pr.id,
+                                prNumber: pr.number,
                                 ref: pr.head.ref,
                                 user: pr.head.user.login,
                                 repository: pr.head.repo.name,

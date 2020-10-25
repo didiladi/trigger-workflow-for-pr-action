@@ -9,7 +9,7 @@ import {
 import {Octokit} from '@octokit/core'
 
 export interface PullRequestResult {
-  issueNumber: number
+  prNumber: number
   ref: string
   user: string
   repository: string
@@ -56,13 +56,13 @@ export async function getPullRequests(
       */
 
       if (containsLabel(octokit, pr.labels, input.label)) {
-        core.info(`PR ${pr.id} contained label ${input.label}`)
+        core.info(`PR ${pr.number} contained label ${input.label}`)
 
         const events: OctokitResponse<IssuesListEventsResponseData> = await octokit.issues.listEvents(
           {
             owner: input.repositoryOwner,
             repo: input.repositoryName,
-            issue_number: pr.id
+            issue_number: pr.number
           }
         )
 
@@ -79,13 +79,13 @@ export async function getPullRequests(
         )
         if (lastLabelEventTimestamp === 0) {
           core.error(
-            `No timestamp found, despite label was present on PR ${pr.id}`
+            `No timestamp found, despite label was present on PR ${pr.number}`
           )
           continue
         }
 
         core.info(
-          `Label was added at ${lastLabelEventTimestamp} on PR ${pr.id}`
+          `Label was added at ${lastLabelEventTimestamp} on PR ${pr.number}`
         )
 
         const commentPrefix = `<!-- Do not edit. label:${input.label} time:${lastLabelEventTimestamp} -->`
@@ -94,17 +94,17 @@ export async function getPullRequests(
           if (
             !alreadyContainsLabelComment(
               octokit,
-              pr.id,
+              pr.number,
               lastLabelEventTimestamp,
               input,
               commentPrefix
             )
           ) {
             core.info(
-              `PR ${pr.id} selected for dispatch event ${input.dispatchEvent}`
+              `PR ${pr.number} selected for dispatch event ${input.dispatchEvent}`
             )
             result.push({
-              issueNumber: pr.id,
+              prNumber: pr.number,
               ref: pr.head.ref,
               user: pr.head.user.login,
               repository: pr.head.repo.name,

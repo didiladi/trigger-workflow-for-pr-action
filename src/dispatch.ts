@@ -19,7 +19,7 @@ export async function dispatch(
   return new Promise<void>(async (resolve, reject) => {
     const payload: ClientPayload = {
       ref: pullRequest.ref,
-      pr_number: pullRequest.issueNumber,
+      pr_number: pullRequest.prNumber,
       user: pullRequest.user,
       repo: pullRequest.repository,
       comment_prefix: pullRequest.commentPrefix
