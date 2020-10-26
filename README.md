@@ -7,16 +7,19 @@ This action enables you to automate running tests which need access to secrets i
 * For merging, the maintainers need to check whether the integration tests pass
   * Sadly, the integration tests need to access secrets - we can't run the integration tests in the context of the fork
   * By doing so, we would bleed the secrets into the fork
-  * So, what do we do? :thinking-face:
-* A maintainer performs a code review - the code looks awesome!
-* The maintainer adds a label `run-integration-tests` to the PR
+  * So, what do we do? :question:
+
+## The solution
+
+* :+1: A maintainer performs a code review - the code looks awesome!
+* :label: The maintainer adds a label `run-integration-tests` to the PR
 * The cron-triggered workflow using this action runs and picks up the new PR.
-* Since the label `run-integration-tests` is present, and there is no comment yet from action [comment-on-pr-action](https://github.com/didiladi/comment-on-pr-action), a event `trigger-integration-tests` is dispatched.
-* There is a workflow in the upstream repository which is triggered by the event.
-* It runs the integration tests and wites back the results to the PR. Of course, the tests succeed.
-* Now, the maintainer can merge the awesome PR
+* :envelope: Since the label `run-integration-tests` is present, and there is no comment yet from action [comment-on-pr-action](https://github.com/didiladi/comment-on-pr-action), a event `trigger-integration-tests` is dispatched.
+* :inbox_tray: There is a workflow in the upstream repository which is triggered by the event.
+* :heavy_check_mark: It runs the integration tests and wites back the results to the PR. Of course, the tests succeed.
+* :100: Now, the maintainer can merge the awesome PR
 <br/><br/>
-This repository contains the code for the action to dispatch the event in the scenario above:
+This repository contains the code for the action to dispatch the event in the scenario above.
 ---
 
 ## Dispatch an event for pull requests with given label
