@@ -71,5 +71,25 @@ jobs:
     * description: the respository to search for pull requests in the format `{owner}/{repo}`
   * comment-user:
     * required: true
-    * description: the respository to search for pull requests in the format `{owner}/{repo}`
+    * description: the user who posts the comments on the PR. This might be github-actions[bot] int eh default case, but also a other user, or bot - depending on the PAT used for the [comment-on-pr-action](https://github.com/didiladi/comment-on-pr-action) action.
     * default: github-actions[bot]
+
+### Output event meta data 
+
+The following data is added to the event which is being dispatched:
+
+* ref: 
+  * data type: string
+  * description: The ref the PR was created from. This is usually the name of the branch in the fork where the PR originated. This information is later used to check out the same code contained in the PR. 
+* pr_number: 
+  * data type: number
+  * description: The number of the PR. This information is used to write back the comment to the PR.
+* user: 
+  * data type: string
+  * description: The user who created the PR
+* repo: 
+  * data type: string
+  * description: The name of the repository (fork)
+* comment_prefix: 
+  * data type: string
+  * description: This generated string is used to determine, if the PR already contains a comment for the given label. Otherwise, the cron job would continously keep on creating comments.
