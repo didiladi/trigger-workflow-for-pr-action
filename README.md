@@ -19,7 +19,12 @@ This action enables you to automate running tests which need access to secrets i
 * :heavy_check_mark: It runs the integration tests and wites back the results to the PR. Of course, the tests succeed.
 * :100: Now, the maintainer can merge the awesome PR
 <br/><br/>
+
 This repository contains the code for the action to dispatch the event in the scenario above.
+
+
+To see a full working example of the workflow, please look at the [didiladi/mac-build-test](https://github.com/didiladi/mac-build-test) repository.
+
 ---
 
 ## Dispatch an event for pull requests with given label
@@ -47,7 +52,7 @@ jobs:
 
     steps:
       - name: main
-        uses: didiladi/trigger-workflow-for-pr-action@main
+        uses: didiladi/trigger-workflow-for-pr-action@v1
         with:
           label: run-integration-tests
           dispatch-event: trigger-integration-tests
