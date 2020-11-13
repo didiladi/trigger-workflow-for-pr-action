@@ -170,7 +170,7 @@ function alreadyContainsLabelComment(
 
     core.debug(`Check body: '${comment.body}' against '${commentPrefix}'`)
 
-    if (comment.body.startsWith(`${commentPrefix}`)) {
+    if (comment.body.includes(commentPrefix)) {
       core.info(`PR ${prId} already contained comment: skipping PR`)
       return true
     }
