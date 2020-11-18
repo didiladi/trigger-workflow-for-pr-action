@@ -5462,7 +5462,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getPullRequests = void 0;
+exports.alreadyContainsLabelComment = exports.getPullRequests = void 0;
 const core = __importStar(__webpack_require__(186));
 function getPullRequests(octokit, input) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -5492,7 +5492,7 @@ function getPullRequests(octokit, input) {
                     core.debug('Events:');
                     core.debug(JSON.stringify(events));
                     const lastLabelEventTimestamp = getLastLabelEventTimestamp(events.data, input.label);
-                    if (lastLabelEventTimestamp === 0) {
+                    if (lastLabelEventTimestamp === '') {
                         core.error(`No timestamp found, despite label was present on PR ${pr.number}`);
                         continue;
                     }
@@ -5501,7 +5501,8 @@ function getPullRequests(octokit, input) {
                     const comments = yield octokit.issues.listComments({
                         owner: input.repositoryOwner,
                         repo: input.repositoryName,
-                        issue_number: pr.number
+                        issue_number: pr.number,
+                        since: lastLabelEventTimestamp
                     });
                     if (!isSuccessful(comments.status)) {
                         throw new Error(`GET pull request comments failed: ${comments.status}`);
@@ -5534,6 +5535,7 @@ function containsLabel(oktokit, labels, label) {
     return false;
 }
 function getLastLabelEventTimestamp(events, label) {
+    let lastLabelEventTime = '';
     let lastLabelEventTimestamp = 0;
     for (const event of events) {
         if (event.event === 'labeled') {
@@ -5541,12 +5543,13 @@ function getLastLabelEventTimestamp(events, label) {
             if (eventAsAny.label.name === label) {
                 const timestamp = Date.parse(event.created_at);
                 if (timestamp > lastLabelEventTimestamp) {
+                    lastLabelEventTime = event.created_at;
                     lastLabelEventTimestamp = timestamp;
                 }
             }
         }
     }
-    return lastLabelEventTimestamp;
+    return lastLabelEventTime;
 }
 function alreadyContainsLabelComment(comments, prId, input, commentPrefix) {
     for (const comment of comments) {
@@ -5554,13 +5557,14 @@ function alreadyContainsLabelComment(comments, prId, input, commentPrefix) {
             continue;
         }
         core.debug(`Check body: '${comment.body}' against '${commentPrefix}'`);
-        if (comment.body.startsWith(`"${commentPrefix}`)) {
+        if (comment.body.includes(commentPrefix)) {
             core.info(`PR ${prId} already contained comment: skipping PR`);
             return true;
         }
     }
     return false;
 }
+exports.alreadyContainsLabelComment = alreadyContainsLabelComment;
 function isSuccessful(status) {
     return status >= 200 && status <= 300;
 }

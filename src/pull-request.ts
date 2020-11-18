@@ -69,7 +69,7 @@ export async function getPullRequests(
           events.data,
           input.label
         )
-        if (lastLabelEventTimestamp === 0) {
+        if (lastLabelEventTimestamp === '') {
           core.error(
             `No timestamp found, despite label was present on PR ${pr.number}`
           )
@@ -85,7 +85,8 @@ export async function getPullRequests(
           {
             owner: input.repositoryOwner,
             repo: input.repositoryName,
-            issue_number: pr.number
+            issue_number: pr.number,
+            since: lastLabelEventTimestamp
           }
         )
 
@@ -140,7 +141,8 @@ function containsLabel(
 function getLastLabelEventTimestamp(
   events: IssuesListEventsResponseData,
   label: string
-): number {
+): string {
+  let lastLabelEventTime = ''
   let lastLabelEventTimestamp = 0
 
   for (const event of events) {
@@ -149,15 +151,16 @@ function getLastLabelEventTimestamp(
       if (eventAsAny.label.name === label) {
         const timestamp = Date.parse(event.created_at)
         if (timestamp > lastLabelEventTimestamp) {
+          lastLabelEventTime = event.created_at
           lastLabelEventTimestamp = timestamp
         }
       }
     }
   }
-  return lastLabelEventTimestamp
+  return lastLabelEventTime
 }
 
-function alreadyContainsLabelComment(
+export function alreadyContainsLabelComment(
   comments: IssuesListCommentsResponseData,
   prId: number,
   input: InputSettings,
